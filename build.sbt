@@ -4,7 +4,7 @@ import Resolvers._
 name := "rascal-spark"
 description := "Spark demo"
 
-val playVersion = "2.5.5"
+val playVersion = "2.6.3"
 
 val buildVersion = sys.env.get("GO_PIPELINE_LABEL") match {
   case Some(label) => s"$label"
@@ -18,7 +18,7 @@ val dockerRegistry = sys.env.get("DOCKER_REGISTRY") match {
 
 lazy val common = Seq(
   version := buildVersion,
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.11.8",
   organization := "com.stayrascal",
   dockerRepository := dockerRegistry,
   resolvers ++= resolverSetting
@@ -27,7 +27,7 @@ lazy val common = Seq(
 lazy val assemblyCommonSettings = Seq(
   version := buildVersion,
   organization := "com.stayrascal",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.11.8",
   test in assembly := {}
 )
 

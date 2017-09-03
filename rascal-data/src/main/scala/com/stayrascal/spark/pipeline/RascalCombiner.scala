@@ -55,7 +55,7 @@ class RascalCombiner(spark: SparkSession) extends Serializable {
       val labeled = calculateLabel(numberized)
       replaceNull(labeled, fieldsToProcess)
     } else {
-      replaceNull(nullRemoved, fieldsToProcess)
+      replaceNull(numberized, fieldsToProcess)
     }
 
     val leaveNullRemoved = replaceNull(nullRemoved, List("LeaveStartDate", "LeaveEndDate"))
@@ -131,7 +131,7 @@ class RascalCombiner(spark: SparkSession) extends Serializable {
 object RascalCombiner {
   val spark: SparkSession = SparkSession
     .builder()
-    .appName("Rascal Spark Dmo")
+    .appName("Rascal Spark Demo Data Process")
     .getOrCreate()
 
   val combiner = new RascalCombiner(spark)

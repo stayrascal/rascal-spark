@@ -26,7 +26,6 @@ object RascalEmbedServer {
       server.setHandler(new RascalHandler(spark, combiner))
       server.start()
       server.join()
-
     }
   }
 }

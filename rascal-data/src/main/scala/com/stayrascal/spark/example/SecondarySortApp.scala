@@ -3,10 +3,6 @@ package com.stayrascal.spark.example
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-class CmbInfo extends Serializable {
-  val re
-}
-
 object SecondarySortApp {
 
   def main(args: Array[String]): Unit = {
@@ -21,6 +17,5 @@ object SecondarySortApp {
   }
 
   def mapTfRdd2Pair(accessLogRdd: RDD[String]): Unit = {
-    return accessLogRdd.ma
   }
 }

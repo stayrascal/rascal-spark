@@ -21,8 +21,8 @@ object DataFrameExample {
     df_2.printSchema()
     val df_3 = convertColumn(df_2, "ArrDelay", "int")
     val df_4 = convertColumn(df_3, "DepDelay", "int")
-    val averageDelays = df_4.groupBy("FlightNum").agg(avg(df_4.col("ArrDelay")), avg(df_4.col("DepDelay")))
-    averageDelays.cache()
+//    val averageDelays = df_4.groupBy("FlightNum").agg(avg(df_4.col("ArrDelay")), avg(df_4.col("DepDelay")))
+//    averageDelays.cache()
 
 
   }

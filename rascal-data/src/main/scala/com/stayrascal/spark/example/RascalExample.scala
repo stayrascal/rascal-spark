@@ -5,12 +5,12 @@ import java.text.SimpleDateFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
-
 case class Stock(date: String, openPrice: Double, highPrice: Double, lowPrice: Double, closePrice: Double, volume: Double, adjClosePrice: Double)
 
 object RascalExample {
 
   import org.apache.spark.sql._
+
 
   val spark: SparkSession = SparkSession
     .builder()
@@ -20,6 +20,8 @@ object RascalExample {
 
   val conf = new SparkConf().setAppName("Rascal Spark Example Demo").setMaster("local[*]")
   val sc = new SparkContext(conf)
+
+  import spark.implicits._
 
   def main(args: Array[String]): Unit = {
     /*val spyDF = spark.read.csv("/Users/zpwu/workspace/spark/data/SPY_2016.csv")

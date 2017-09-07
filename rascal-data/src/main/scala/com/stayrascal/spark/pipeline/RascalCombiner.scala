@@ -132,6 +132,7 @@ object RascalCombiner {
   val spark: SparkSession = SparkSession
     .builder()
     .appName("Rascal Spark Demo Data Process")
+      .master("local[*]")
     .getOrCreate()
 
   val combiner = new RascalCombiner(spark)

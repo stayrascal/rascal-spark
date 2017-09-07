@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>US OnTime Flights Map</title>
+    <script src="js/d3.min.js"></script>
+    <script src="js/uStates.js"></script>
+    <style>
+        .state {
+            fill: none;
+            stroke: #888888;
+            stroke-width: 1;
+        }
+
+        .state:hover {
+            fill-opacity: 0.5;
+        }
+
+        #tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 20px;
+            margin: 10px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 1px;
+            border-radius: 2px;
+            border: 1px solid grey;
+            border-radius: 5px;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.9);
+            font-size: 14px;
+            width: auto;
+            padding: 4px;
+            color: white;
+            opacity: 0;
+        }
+
+        #tooltip h4 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        #tooltip tr td:nth-child(1) {
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+<div id="tooltip"></div>
+<svg width="960" height="800" id="statesvg"></svg>
+<script>
+  d3.csv("data/result.csv", function (error, csvData) {
+    var mapData = {};
+    var sum = 0.0;
+    csvData.forEach(function (d) {
+      sum += parseFloat(d.OnTimeFlightsNum)
+    });
+
+    csvData.forEach(function (d) {
+      var key = d.StateName.toString();
+      var vNumOfOnTimeFlights = parseFloat(d.OnTimeFlightsNum);
+      var vColor = d3.interpolate("#57d2f7", "#726dd1")(vNumOfOnTimeFlights / sum * 10);
+      mapData[key] = { num: vNumOfOnTimeFlights, color: vColor }
+    });
+
+    uStates.draw("#statesvg", mapData)
+  });
+</script>
+</body>
+</html>

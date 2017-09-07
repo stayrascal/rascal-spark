@@ -4,7 +4,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.DecisionTree
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 
 case class Flight(dayOfMonth: Int, dayOfWeek: Int, crsDepTime: Double, crsArrTime: Double, uniqueCarrier: String,
                   crsElapsedTime: Double, origin: String, dest: String, arrDelay: Int, depDelay: Int, delayFlag: Int)
@@ -24,7 +24,17 @@ object AirplaneExample {
     val flightData = spark.read.format("com.databricks.spark.csv").option("header", "true").load("/Users/zpwu/workspace/spark/data/airport/1998.csv")
     val airportData = spark.read.format("com.databricks.spark.csv").option("header", "true").load("/Users/zpwu/workspace/spark/data/airport/airports.csv")
 
-    trainAndPredict(flightData)
+    flightData.createOrReplaceTempView("flights")
+    airportData.createOrReplaceTempView("airports")
+
+    val queryFlightnumResult = spark.sql("SELECT COUNT(FlightNum) FROM flights WHERE DepTime BETWEEN 0 AND 600")
+    val queryFlightnumResult1 = spark.sql("SELECT COUNT(FlightNum)/COUNT(DISTINCT DayofMonth) FROM flights WHERE  Month = 1 AND DepTime BETWEEN 1001 AND 1400")
+    val queryDestResult = spark.sql("SELECT DISTINCT Dest, ArrDelay FROM flights WHERE ArrDelay = 0")
+    val queryDestResult2 = spark.sql("SELECT DISTINCT Dest, COUNT(ArrDelay) AS delayTimes FROM flights WHERE ArrDelay = 0 GROUP BY Dest ORDER BY delayTimes DESC")
+    val queryDestResult3 = spark.sql("SELECT DISTINCT state, SUM(delayTimes) AS s FROM (SELECT DISTINCT Dest, COUNT(ArrDelay) AS delayTimes FROM flights WHERE ArrDelay = 0 GROUP BY Dest ) a JOIN airports b ON a.Dest = b.iata GROUP BY state ORDER BY s DESC")
+    queryDestResult3.write.format("com.databricks.spark.csv").mode(SaveMode.Overwrite).option("header", "true").save(s"/Users/zpwu/workspace/spark/data/airport/QueryDestResult.csv")
+
+    //    trainAndPredict(flightData)
   }
 
   private def trainAndPredict(flightData: DataFrame) = {

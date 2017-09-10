@@ -39,10 +39,10 @@ object TaxiExample {
 
     val km = new KMeans().setK(10).setFeaturesCol("features").setPredictionCol("prediction")
     val kmModel = km.fit(taxiDF2)
-    val kmResult = kmModel.clusterCenters
+    /*val kmResult = kmModel.clusterCenters
     val kmRDD1 = spark.sparkContext.parallelize(kmResult)
     val kmRDD2 = kmRDD1.map(x => (x(1), x(0)))
-    kmRDD2.saveAsTextFile("/Users/zpwu/workspace/spark/data/taxi/kmResult")
+    kmRDD2.saveAsTextFile("/Users/zpwu/workspace/spark/data/taxi/kmResult")*/
 
 
     val predictions = kmModel.transform(testData)

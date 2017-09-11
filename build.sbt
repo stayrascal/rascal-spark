@@ -45,3 +45,5 @@ lazy val `rascal-data` = (project in file("rascal-data")).settings(assemblyCommo
       oldStrategy(x)
   }
 )
+
+lazy val  `rascal-data-provider` = project in file("rascal-data-provider")

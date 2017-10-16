@@ -40,8 +40,8 @@ object Game {
         buf += toStr(x)
         println(buf.last)
       }
-      case _ => for {x@(v1, _, _, _) <- xs; val ys = xs.diff(List(x))
-                     y@(v2, _, _, _) <- ys; val rs = ys.diff(List(y))} {
+      case _ => for {x@(v1, _, _, _) <- xs; ys = xs.diff(List(x))
+                     y@(v2, _, _, _) <- ys; rs = ys.diff(List(y))} {
         solve0((v1 + v2, x, y, '+') :: rs)
         solve0((v1 - v2, x, y, '-') :: rs)
         solve0((v1 * v2, x, y, '*') :: rs)

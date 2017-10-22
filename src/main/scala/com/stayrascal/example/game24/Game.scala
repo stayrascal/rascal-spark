@@ -184,8 +184,27 @@ object Game {
     //    print(eval("1+2+(3*5)+3+3*(3+(3+5))"))
     //    solve(List(5, 5, 5, 1))
     //    solve(List(3, 3, 8, 8))
-//    println(permutations(List(1, 2, 3)).mkString("\n"))
-    cal24Once(List(5,6,7,8))
+    //    println(permutations(List(1, 2, 3)).mkString("\n"))
+    //    cal24Once(List(5,6,7,8))
+//    println(duplicateEncode("Success"))
+//    println(duplicateEncode("recede"))
+    val noNumber: Option[Int] = None
+    println(noNumber.fold(1)(_ * 3))
   }
+
+  def comp(seq1: Seq[Int], seq2: Seq[Int]) = (seq1, seq2) match {
+    case (null, _) => false
+    case (_, null) => false
+    case (s1, s2) => s1.map(x => x * x).sorted == s2.sorted
+  }
+
+  def duplicateEncode(word: String): String = {
+    val wordMap: Map[Char, Int] = word.toLowerCase.groupBy(identity).mapValues(_.size)
+    word.toLowerCase.map(x => wordMap.get(x) match {
+      case Some(1) => '('
+      case _ => ')'
+    })
+  }
+
 
 }

@@ -38,12 +38,12 @@ object PageRankExample {
     for (i <- 1 to num) {
       init = rankFile.aggregateByKey(List[String]())(_ :+ _, _ ++ _)
         .flatMap(calculate(_, map.value)).reduceByKey(_ + _)
-        .rightOuterJoin(init).map(x => (x._1, if (x._2._1.isDefined == true) x._2._1.get else 0f))
+        .rightOuterJoin(init).map(x => (x._1, if (x._2._1.isDefined == true) x._2._1.get * 0.85f + 0.15f else 0.15f))
       if (i != num) {
         map = spark.sparkContext.broadcast(init.collectAsMap())
       }
-      init.collect().foreach(println)
     }
+    init.collect().foreach(println)
 
 
     /*var ranks = links.mapValues(v => 1.0)

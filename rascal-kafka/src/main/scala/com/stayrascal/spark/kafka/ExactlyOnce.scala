@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.codehaus.jackson.map.deser.std.StringDeserializer
@@ -100,5 +101,32 @@ object ExactlyOnce {
     }
     ssc.stop()
     ssc.awaitTermination()
+  }
+
+
+  // Receiver based
+  def getKafkaInputStream(zookeeper: String,
+                          topic: String,
+                          groupId: String,
+                          numReceivers: Int,
+                          partition: Int,
+                          ssc: StreamingContext): DStream[String] = {
+    val kafkaParams = Map(
+      "zookeeper.connect" -> zookeeper,
+      "auto.offset.reset" -> "largest", //read data from latest offset
+      "zookeeper.connection.timeout.ms" -> "30000", // connect zookeeper timeout
+      "fetch.message.max.btytes" -> (1024 * 1024 * 50).toString,
+      "group.id" -> groupId
+    )
+
+    val topics = Map(topic -> partition / numReceivers)
+    val kafkaDstreams = (1 to numReceivers).map { _ =>
+      KafkaUtils.createDirectStream(ssc, LocationStrategies.PreferConsistent, ConsumerStrategies.Assign[String, String](topics, kafkaParams))
+    }
+    ssc.union(kafkaDstreams)
+  }
+
+  private def getDirectStream(ssc: StreamingContext, kafkaParams: Map[String, String], topics: Set[String]): DStream[String] = {
+    val kafkaDStreams = KafkaUtils.createDirectStream[String, String](ssc, kafkaDStreams, topics)
   }
 }

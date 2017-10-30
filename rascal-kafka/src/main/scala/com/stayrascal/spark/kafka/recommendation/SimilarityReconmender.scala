@@ -159,6 +159,21 @@ object SimilarityReconmender extends Recommender {
   }
 
 
+  def normalizeLp(products: Iterable[(Int, Double)], p: Int): Iterable[(Int, Double)] = {
+    val lpnorm = math.pow(products.map(t => math.pow(t._2, p)).sum, 1.0 / p)
+    products.map(t => t._1 -> t._2 / lpnorm)
+  }
+
+  def normalizeRange(products: Iterable[(Int, Double)]): Iterable[(Int, Double)] = {
+    val min = products.map(_._2).min
+    val max = products.map(_._2).max
+    if (min == max) {
+      products.map(t => t._1 -> 0.5)
+    } else {
+      products.map(t => t._1 -> (t._2 - min) / (max - min))
+    }
+  }
+
   override def recommend(trainingSet: RDD[Rating], params: Map[String, Any]): RDD[(Int, Seq[Rating])] = {
     val numNeighbours = params.getInt("numNeighbours")
     val numRecommendations = params.getInt("numRecommendations")
@@ -182,7 +197,13 @@ object SimilarityReconmender extends Recommender {
       case "jaccard" => jaccard(mat)
       case "euclidean" => euclidean(coorMat)
       case _ => throw new IllegalArgumentException("unknown similarity method")
-
     }
+
+    val simTop = sim.entries.map { case MatrixEntry(i, j, u) =>
+      i.toInt -> (j.toInt, u)
+    }.groupByKey.mapValues { products =>
+      val productsTop = products.toSeq.sortWith(_._2 > _._2).take(numNeighbours)
+      normalizeRange(productsTop)
+    }.persist()
   }
 }

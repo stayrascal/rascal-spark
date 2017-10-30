@@ -1,5 +1,6 @@
 package com.stayrascal.spark.kafka.recommendation
 
+import org.apache.hadoop.fs.Path
 import org.apache.spark.mllib.linalg.distributed.{CoordinateMatrix, MatrixEntry, RowMatrix}
 import org.apache.spark.mllib.recommendation.Rating
 import org.apache.spark.rdd.RDD
@@ -138,7 +139,7 @@ object SimilarityReconmender extends Recommender {
         j -> row.vector(j)
       }
       normalize(values).filterNot(_._2.isNaN).map { case (j, value) =>
-        MatrixEntry(row.index, k, value)
+        MatrixEntry(row.index, j, value)
       }
     }
     val normMat = new CoordinateMatrix(normEntries)
@@ -174,6 +175,49 @@ object SimilarityReconmender extends Recommender {
     }
   }
 
+  def recommendByScore(simTop: RDD[(Int, Iterable[(Int, Double)])], trainingSet: RDD[Rating], numRecommendations: Int): RDD[(Int, Seq[Rating])] = {
+    trainingSet.map { case Rating(user, product, rating) =>
+      product -> user
+    }.join(simTop).flatMap { case (product, (user, products)) =>
+      products.map { case (j, u) =>
+        user -> (product, j, u)
+      }
+    }.groupByKey.map { case (user, products) =>
+      val visited = products.map(_._1).toSet
+      val newProducts = products.filterNot(t => visited(t._2)).map { case (_, product, rating) =>
+        Rating(user, product, rating)
+      }
+      val topProducts = newProducts.toSeq.sortWith(_.rating > _.rating).take(numRecommendations)
+      user -> topProducts
+    }
+  }
+
+  def recommendByWeightedSum(simTop: RDD[(Int, Iterable[(Int, Double)])], trainingSet: RDD[Rating], numRecommendations: Int): RDD[(Int, Seq[Rating])] = {
+    trainingSet.map { case Rating(user, product, rating) =>
+      user -> (product, rating)
+    }.groupByKey.flatMap { case (user, products) =>
+      normalizeRange(products).map { case (product, rating) =>
+        product -> (user, rating)
+      }
+    }.join(simTop).flatMap { case (product, ((user, rating), products)) =>
+      products.map { case (j, u) =>
+        user -> (product, j, u, rating)
+      }
+    }.groupByKey.map { case (user, products) =>
+      val visited = products.map(_._1).toSet
+      val newProducts = products.filterNot(t => visited(t._2)).map(t => t._2 -> (t._3, t._4))
+      val topProducts = newProducts.groupBy(_._1).mapValues(_.map(_._2)).map { case (product, products) =>
+        val total = products.map(_._1).sum
+        val rating = if (total != 0) {
+          val score = products.map(t => t._1 * t._2).sum
+          score / total
+        } else 0.0
+        Rating(user, product, rating)
+      }.toSeq.sortWith(_.rating > _.rating).take(numRecommendations)
+      user -> topProducts
+    }
+  }
+
   override def recommend(trainingSet: RDD[Rating], params: Map[String, Any]): RDD[(Int, Seq[Rating])] = {
     val numNeighbours = params.getInt("numNeighbours")
     val numRecommendations = params.getInt("numRecommendations")
@@ -205,5 +249,21 @@ object SimilarityReconmender extends Recommender {
       val productsTop = products.toSeq.sortWith(_._2 > _._2).take(numNeighbours)
       normalizeRange(productsTop)
     }.persist()
+
+    if (outputPath.nonEmpty) {
+      val simToPath = new Path(outputPath, "item_similarities")
+      logger.info("Writing item similarities into" + simToPath.toString)
+      simTop.flatMap { case (i, products) =>
+        products.map { case (j, u) =>
+          Seq[Any](i, j, u).mkString("\t")
+        }
+      }.saveAsTextFile(simToPath.toString)
+    }
+
+    recommendMethod match {
+      case "score" => recommendByScore(simTop, trainingSet, numRecommendations)
+      case "weighted-sum" => recommendByWeightedSum(simTop, trainingSet, numRecommendations)
+      case _ => throw new IllegalArgumentException("unknow recommend method")
+    }
   }
 }

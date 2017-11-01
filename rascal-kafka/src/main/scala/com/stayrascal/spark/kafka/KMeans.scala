@@ -37,7 +37,7 @@ object KMeans {
     val convergeDist = args(2).toDouble
 
     val data = sc.textFile(inputFile).map(parseVector).persist()
-    val kPoints = data.takeSample(withReplacement = false, K, 42,).toArray
+    val kPoints = data.takeSample(withReplacement = false, K, 42).toArray
     var tempDist = 1.0
 
     while (tempDist > convergeDist) {

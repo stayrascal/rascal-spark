@@ -5,6 +5,24 @@ import org.apache.spark.graphx.lib.LabelPropagation
 import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.sql.SparkSession
 
+/**
+  * 半监督学习 Semi-supervised learning
+  * 半监督学习基于三种假设:
+  * - Smoothness平滑假设：相似的数据具有相同的label
+  * - Cluster聚类假设：处于统一聚类下的数据具有相同label
+  * - Manifold流形假设：处于同一流形结构下的数据具有相同label
+  *
+  * 半监督学习最简单的标签传播算法：相似的数据应该具有相同的label
+  * - 构造相似矩阵
+  * - 传播
+  *
+  *
+  * Label Propagation算法是一种基于标签传播的局部社区划分算法。
+  * 对于网络中的每一个节点，在初始阶段，Label Propagation算法对每一个节点一个唯一的标签，
+  * 在每一个迭代的过程中，每一个节点根据与其相连的节点所属的标签改变自己的标签，
+  * 更改的原则是选择与其相连的节点中所属标签最多的社区标签为自己的社区标签，这便是标签传播的含义。
+  * 随着社区标签的不断传播，最终紧密连接的节点将有共同的标签。
+  */
 object LabelPropagationApp {
   def main(args: Array[String]): Unit = {
 

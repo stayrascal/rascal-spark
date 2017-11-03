@@ -25,8 +25,9 @@ object ConnectedComponentApp {
     val minEdge = args(2).toInt
 
     val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK)
-    val res = graph.connectedComponents(.vertices
-    )
+
+    val strongkyRes = graph.stronglyConnectedComponents(3).vertices
+    val res = graph.connectedComponents().vertices
 
     res.saveAsTextFile(output)
 

@@ -40,6 +40,10 @@ object PageRankApp {
     val staticRanks = graph.staticPageRank(maxIterations, resetProb).vertices
     staticRanks.saveAsTextFile(output)
 
+
+    val triCounts = graph.triangleCount().vertices
+    println("num triangles are " + triCounts.count())
+
     sc.stop()
   }
 

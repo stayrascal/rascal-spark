@@ -4,6 +4,8 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.feature.PCA
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.SparkSession
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 
 object PCAApp {
   def main(args: Array[String]): Unit = {

@@ -19,24 +19,6 @@ object MainClass {
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  def test(f: (Integer) => Integer) =  f
-
-  def test1(f: => Integer) = {
-    println("test1")
-    f.
-  }
-
-  def test2() = 2
-
-  def test3(a: Integer) = 3
-
-  def main(args: Array[String]): Unit = {
-    test(test3)(3)
-    test1(test3(1))
-    test1(test2)
-  }
-
-
   def evaluatePrecision(testingSet: RDD[Rating], userRecomm: RDD[(Int, Seq[Rating])]): (Double, Double, Double) = {
     val userTest = testingSet.map { rating =>
       rating.user -> rating

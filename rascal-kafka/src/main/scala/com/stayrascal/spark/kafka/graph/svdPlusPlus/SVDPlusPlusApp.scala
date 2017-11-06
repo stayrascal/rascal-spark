@@ -1,6 +1,7 @@
 package com.stayrascal.spark.kafka.graph.svdPlusPlus
 
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.graphx.lib.SVDPlusPlus
 import org.apache.spark.graphx.{Edge, GraphLoader, PartitionStrategy}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -26,7 +27,7 @@ import org.apache.spark.storage.StorageLevel
   * ASVD 去掉RSVD中的用户矩阵，利用用户评过分的商品和用户浏览过尚未评分的商品属性来表示用户属性，存储空间减少，但是迭代时间太长
   * SVD++ 引入隐私反馈，使用用户的历史浏览数据，用户历史评分数据，物品历史浏览数据，物品历史评分数据作为新的参数
   */
-object SVDPlusPlus {
+object SVDPlusPlusApp {
   def main(args: Array[String]): Unit = {
     if (args.length != 12) {
       println("usage: <input> <output> <minEdge> <numIter> <rank> <minVal> <maxVal> <gamma1> <gamma2> <gamma6> <gamma7> <StroageLevel>")

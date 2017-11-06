@@ -10,6 +10,7 @@ object SQLExample {
     .getOrCreate()
 
   def main(args: Array[String]): Unit = {
+    import spark.implicits._
     val hdfsDs = spark.sqlContext.read.text("hdfs://*******").as[String]
 
     // DataFrame

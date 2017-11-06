@@ -1,4 +1,4 @@
-package com.stayrascal.spark.kafka.KMeans
+package com.stayrascal.spark.kafka.kmeans
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.util.KMeansDataGenerator

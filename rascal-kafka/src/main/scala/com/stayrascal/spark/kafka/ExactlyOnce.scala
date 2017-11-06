@@ -8,7 +8,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.codehaus.jackson.map.deser.std.StringDeserializer
@@ -82,30 +81,39 @@ object ExactlyOnce {
       val result = processLogs(rdd).collect()
 
       DB.localTx { implicit session =>
-        sql"""
+        result.foreach { case (time, count) =>
+          sql"""
              INSERT INTO error_log(log_time, log_count)
              VALUE (${time}, ${count})
              ON duplicate key update log_count = log_count _ VALUES (log_count)
            """.update.apply()
-      }
+        }
 
-      val affectedRows = offsetRanges.foreach { offsetRange =>
-        sql"""
+        offsetRanges.foreach { offsetRange =>
+          sql"""
              INSERT ignore INTO kafka_offset (topic, `partition`, offset) VALUE (${topic}, ${offsetRange.partition}, ${offsetRange.fromOffset})
            """.update.apply()
+
+          val affectedRows =
+            sql"""
+                 update kafka_offset set offset = ${offsetRange.untilOffset} WHERE topic = ${topic} and `partition` = ${offsetRange.partition} and offset = ${offsetRange.fromOffset}
+               """.update.apply()
+
+          if (affectedRows != 1) {
+            throw new Exception("fail to update offset")
+          }
+        }
       }
 
-      if (affectedRows != 1) {
-        throw new Exception("fail to update offset")
-      }
+
     }
-    ssc.stop()
+    ssc.start()
     ssc.awaitTermination()
   }
 
 
   // Receiver based
-  def getKafkaInputStream(zookeeper: String,
+  /*def getKafkaInputStream(zookeeper: String,
                           topic: String,
                           groupId: String,
                           numReceivers: Int,
@@ -123,10 +131,10 @@ object ExactlyOnce {
     val kafkaDstreams = (1 to numReceivers).map { _ =>
       KafkaUtils.createDirectStream(ssc, LocationStrategies.PreferConsistent, ConsumerStrategies.Assign[String, String](topics, kafkaParams))
     }
-    ssc.union(kafkaDstreams)
-  }
 
-  private def getDirectStream(ssc: StreamingContext, kafkaParams: Map[String, String], topics: Set[String]): DStream[String] = {
+  }*/
+
+  /*private def getDirectStream(ssc: StreamingContext, kafkaParams: Map[String, String], topics: Set[String]): DStream[String] = {
     val kafkaDStreams = KafkaUtils.createDirectStream[String, String](ssc, kafkaDStreams, topics)
-  }
+  }*/
 }

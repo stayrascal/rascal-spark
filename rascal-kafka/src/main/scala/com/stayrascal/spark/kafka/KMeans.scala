@@ -15,7 +15,7 @@ object KMeans {
 
     for (i <- 0 until centers.length) {
       val tempDist = squaredDistance(p, centers(i))
-      if (tempDist < closest.length) {
+      if (tempDist < closest) {
         closest = tempDist
         bestInt = i
       }

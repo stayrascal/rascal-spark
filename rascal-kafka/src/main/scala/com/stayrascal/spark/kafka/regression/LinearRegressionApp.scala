@@ -1,4 +1,4 @@
-package com.stayrascal.spark.kafka.LinearRegression
+package com.stayrascal.spark.kafka.regression
 
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator

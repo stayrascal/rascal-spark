@@ -1,4 +1,4 @@
-package com.stayrascal.spark.kafka.decisionTree
+package com.stayrascal.spark.kafka.classifier
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.regression.LabeledPoint

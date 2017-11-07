@@ -12,7 +12,7 @@ object DecisionTreeClassifier {
 
     val dataLabelDF: DataFrame = loadData(spark)
 
-    val featuresArray = Array("gender", "age", "yearsmarried", "children", "religiousness", " education", "occupation", "rating")
+    val featuresArray = Array("gender", "age", "yearsmarried", "children", "religiousness", "education", "occupation", "rating")
     val assembler = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
     val vecDF: DataFrame = assembler.transform(dataLabelDF)
     vecDF.show(10, truncate = false)
@@ -687,7 +687,7 @@ object DecisionTreeClassifier {
     val genderWhere = "case when gender='female' then 0 else cast(1 as double) end as gender"
     val childrenWhere = "case when children='no' then 0 else cast(1 as double) end as children"
 
-    val dataLabelDF = spark.sql(s"select $labelWhere, $genderWhere, age, yearsmarrried, $childrenWhere, religiousness, education, occupation, rating from data")
+    val dataLabelDF = spark.sql(s"select $labelWhere, $genderWhere, age, yearsmarried, $childrenWhere, religiousness, education, occupation, rating from data")
     dataLabelDF
   }
 }

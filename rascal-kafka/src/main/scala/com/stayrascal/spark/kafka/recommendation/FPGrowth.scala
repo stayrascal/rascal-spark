@@ -17,6 +17,7 @@ import org.apache.spark.sql.SparkSession
   * 置信度：比如说A对B的置信度，就是AB同时出现的事件除以A的总事件的概率。
   * 提升度：同样A对B，表示在包含A的条件下同时包含B的概率，除以不含A的条件下含有B的概率。
   *
+  *
   * Data: http://download.csdn.net/detail/sanqima/9301589
   * Tutorial: https://www.shiyanlou.com/courses/815/labs/2862/document
   */

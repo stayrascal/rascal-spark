@@ -15,7 +15,7 @@ case class Config(
                    numRecommendations: Int = 30,
                    outputPath: String = "")
 
-object MainClass {
+object RecommendationApp {
 
   val logger = LoggerFactory.getLogger(getClass)
 

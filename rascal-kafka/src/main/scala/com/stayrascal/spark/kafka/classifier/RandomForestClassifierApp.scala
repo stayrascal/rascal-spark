@@ -1,31 +1,34 @@
 package com.stayrascal.spark.kafka.classifier
 
 import com.stayrascal.spark.kafka.DataSet
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, Evaluator, MulticlassClassificationEvaluator}
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorAssembler, VectorIndexer}
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.mllib.evaluation.RegressionMetrics
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object RandomForestClassifierApp {
+  val spark = SparkSession.builder().appName("Spark Random Forest Classifier").master("local[*]").getOrCreate()
+
+  val dataLabelDF: DataFrame = DataSet.loadData(spark)
+
+  val featuresArray = Array("gender", "age", "yearsmarried", "children", "religiousness", "education", "occupation", "rating")
+  val assembler = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
+  val vecDF: DataFrame = assembler.transform(dataLabelDF)
+  vecDF.show(10, truncate = false)
+
+  val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(vecDF)
+  labelIndexer.transform(vecDF).show(10, truncate = false)
+
+  val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(5).fit(vecDF)
+  featureIndexer.transform(vecDF).show(10, truncate = false)
+
+  val Array(trainingData, testData) = vecDF.randomSplit(Array(0.7, 0.3))
+
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder().appName("Spark Random Forest Classifier").master("local[*]").getOrCreate()
 
-    val dataLabelDF: DataFrame = DataSet.loadData(spark)
-
-    val featuresArray = Array("gender", "age", "yearsmarried", "children", "religiousness", "education", "occupation", "rating")
-    val assembler = new VectorAssembler().setInputCols(featuresArray).setOutputCol("features")
-    val vecDF: DataFrame = assembler.transform(dataLabelDF)
-    vecDF.show(10, truncate = false)
-
-    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(vecDF)
-    labelIndexer.transform(vecDF).show(10, truncate = false)
-
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(5).fit(vecDF)
-    featureIndexer.transform(vecDF).show(10, truncate = false)
-
-    val Array(trainingData, testData) = vecDF.randomSplit(Array(0.7, 0.3))
 
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
@@ -55,7 +58,11 @@ object RandomForestClassifierApp {
 
 
     val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
-    val cv = new CrossValidator().setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid).setNumFolds(5)
+    val cv = new CrossValidator()
+      .setEstimator(pipeline)
+      .setEvaluator(evaluator)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(5)
 
     val cvModel = cv.fit(trainingData)
 
@@ -71,5 +78,52 @@ object RandomForestClassifierApp {
 
     val predictDF: DataFrame = cvModel.transform(testData).selectExpr("predictedLabel", "label", "feature")
     predictDF.show(20, false)
+
+    val predictions = cvModel.transform(testData)
+    evaluation(predictions)
+
+    // Finding the base cross-validation model
+    println(s"The best fitted model: ${cvModel.bestModel.asInstanceOf[PipelineModel].stages(2).extractParamMap}")
+  }
+
+  private def firstVersion() = {
+    val classifier = new RandomForestClassifier()
+      .setImpurity("gini")
+      .setMaxDepth(30)
+      .setNumTrees(30)
+      .setFeatureSubsetStrategy("auto")
+      .setSeed(1234567)
+      .setMaxBins(40)
+      .setMinInfoGain(0.001)
+      .setLabelCol("indexedLabel")
+      .setFeaturesCol("indexedFeatures")
+    val model = classifier.fit(trainingData)
+    val predictions = model.transform(testData)
+
+    evaluation(predictions)
+  }
+
+  private def evaluation(predictions: DataFrame) = {
+    val binaryClassificationEvaluator = new BinaryClassificationEvaluator()
+      .setLabelCol("label")
+      .setRawPredictionCol("predictedLabel")
+
+    val accuracy = binaryClassificationEvaluator.evaluate(predictions)
+    println(s"The accuracy before pipeline fitting: $accuracy")
+
+    def printlnMetric(metricName: String): Double = {
+      val metrics = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      metrics
+    }
+
+    println(s"Area Under ROC before tuning: ${printlnMetric("areaUnderROC")}")
+    println(s"Area Under RPC before tuning: ${printlnMetric("areaUnderPR")}")
+
+    val rm = new RegressionMetrics(predictions.select("prediction", "label").rdd.map(x => (x(0).asInstanceOf[Double], x(1).asInstanceOf[Double])))
+    println(s"MSE: ${rm.meanSquaredError}")
+    println(s"MAE: ${rm.meanAbsoluteError}")
+    println(s"RMSE squared: ${rm.rootMeanSquaredError}")
+    println(s"R Squared: ${rm.r2}")
+    println(s"Explained Variance: ${rm.explainedVariance}")
   }
 }

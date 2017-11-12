@@ -9,6 +9,11 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+/**
+  * ROC 曲线可以用于评价一个分类器好坏, ROC 关注两个指标
+  * - true positive rate: TPR = TP / (TP + FN)
+  * - false positive rate: FPR = FP / (FP + TN)
+  */
 object RandomForestClassifierApp {
   val spark = SparkSession.builder().appName("Spark Random Forest Classifier").master("local[*]").getOrCreate()
 
@@ -116,14 +121,15 @@ object RandomForestClassifierApp {
       metrics
     }
 
+    // ROC: receiver operating characteristic
     println(s"Area Under ROC before tuning: ${printlnMetric("areaUnderROC")}")
-    println(s"Area Under RPC before tuning: ${printlnMetric("areaUnderPR")}")
+    println(s"Area Under PR before tuning: ${printlnMetric("areaUnderPR")}")
 
     val rm = new RegressionMetrics(predictions.select("prediction", "label").rdd.map(x => (x(0).asInstanceOf[Double], x(1).asInstanceOf[Double])))
     println(s"MSE: ${rm.meanSquaredError}")
     println(s"MAE: ${rm.meanAbsoluteError}")
     println(s"RMSE squared: ${rm.rootMeanSquaredError}")
-    println(s"R Squared: ${rm.r2}")
+    println(s"R Squared: ${rm.r2}") // 1 - SSE / SST
     println(s"Explained Variance: ${rm.explainedVariance}")
   }
 }

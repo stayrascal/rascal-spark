@@ -4,14 +4,22 @@ import com.stayrascal.spark.kafka.DataSet
 import org.apache.spark.ml.classification.{BinaryLogisticRegressionSummary, LogisticRegression}
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.evaluation.MulticlassMetrics
 import org.apache.spark.mllib.tree.RandomForest
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+/**
+  * Precision: 精确率，查准率 true positive / (true positive + false positive)
+  * Recall: 召回率，查全率 true positive / (true positive + false negative)
+  * F1-Score: 准确率和召回率的综合指标 2 * precision * recall / (precision + recall) => 指准确率和召回率一样重要
+  * F2-Score: 准确率和召回率的综合指标 5 * precision * recall / (4 * precision + recall) => 指召回率比准确率重要一倍
+  * F0.5-Score: 准确率和召回率的综合指标 1.25 * precision * recall / (0.25 * precision + recall) => 指准确率比召回率重要一倍
+  * 一般来说，准确率和召回率反映了分类器性能的两个方面，单一依靠某个指标并不能较为全面地评价一个分类器的性能。
+  */
 object LogisticRegressionApp {
   val spark: SparkSession = SparkSession.builder().appName("Spark Logistic Regression Example").master("local[*]").getOrCreate()
+
   import org.apache.spark.sql.functions._
   import spark.implicits._
 
@@ -123,7 +131,7 @@ object LogisticRegressionApp {
     // model.clearThreshold()
 
     // compute raw scores on the test set
-    val scoreAndLabels = test.map {point =>
+    val scoreAndLabels = test.map { point =>
       val score = model.predict(point.features)
       (score, point.label)
     }

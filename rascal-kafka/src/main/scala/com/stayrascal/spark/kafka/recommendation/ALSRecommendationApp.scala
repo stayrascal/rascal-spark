@@ -8,9 +8,15 @@ class ALSRecommendationApp {
 
   def computeRmse(model: MatrixFactorizationModel, data: RDD[Rating], implicitPrefs: Boolean): Double = {
     val predictions: RDD[Rating] = model.predict(data.map(x => (x.user, x.product)))
-    val predicitonsAndRatings = predictions.map{ x => ((x.user, x.product), x.rating)}.join(data.map(x => ((x.user, x.product), x.rating))).values
-
+    val predictionsAndRatings = predictions.map { x => ((x.user, x.product), x.rating) }
+      .join(data.map { x => ((x.user, x.product), x.rating) }).values
+    if (implicitPrefs) {
+      println("(Prediction, Rating)")
+      println(predictionsAndRatings.take(5).mkString("\n"))
+    }
+    math.sqrt(predictionsAndRatings.map(x => (x._1 - x._2) * (x._1 - x._2)).mean())
   }
+
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder().appName("Spark ALS recommendation application").master("local[*]").getOrCreate()

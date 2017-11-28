@@ -1,0 +1,19 @@
+---
+cluster_name: 'hadoopPOC'
+distro: 'hdp'
+use_dns: false
+dnsfwd: []
+dnsres: []
+
+cloud_config:
+  wax_credentials_file: '~/.raxpub'
+  rax_region: 'ORD'
+  domain: 'localnet'
+  allowed_external_ips: ['127.0.0.1']
+  ssh:
+    keyname: 'hadoop-ssh-key'
+    keyfile: '~/.ssh/id_rsa.pub'
+
+azure: false
+
+debug: true

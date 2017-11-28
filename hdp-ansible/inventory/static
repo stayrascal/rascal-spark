@@ -1,0 +1,11 @@
+[master-nodes]
+master01 ansible_host= bond_ip= ansible_user= ansible_ssh_pass
+#master02 ansible_host= bond_ip= ansible_user= ansible_ssh_pass
+#master03 ansible_host= bond_ip= ansible_user= ansible_ssh_pass
+
+[slave-nodes]
+slave01 ansible_host= bond_ip= ansible_user= ansible_ssh_pass
+slave02 ansible_host= bond_ip= ansible_user= ansible_ssh_pass
+
+[edge-nodes]
+#edge01 ansible_host= bond_ip= ansible_user= ansible_ssh_pass

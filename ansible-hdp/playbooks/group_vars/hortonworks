@@ -2,7 +2,7 @@
 cluster_name: 'hadoop-poc'
 adminnode: 'ambari-node'
 hdp_version: '2.6'
-ambari_version: '2.4.2.0'
+ambari_version: '2.5.0'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
@@ -24,8 +24,8 @@ custom_blueprint: false
 custom_blueprint_template: blueprint-custom.j2
 custom_cluster_template: cluster-template-custom.j2
 custom_repo: false
-custom_repo_url: 'http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Erie-Preview/2.5.0.0-7/centos7/'
-custom_repo_target: 'api/v1/stacks/HDP/versions/2.5/operating_systems/redhat7/repositories/HDP-2.5'
+custom_repo_url: 'http://public-repo-1.hortonworks.com/HDP/centos7/2.x/updates/2.6.3.0'
+custom_repo_target: 'api/v1/stacks/HDP/versions/2.6/operating_systems/redhat7/repositories/HDP-2.6'
 
 #requires HDP2.3 RHEL/CentOS 6
 #available in 2 and 3 masternode blueprints

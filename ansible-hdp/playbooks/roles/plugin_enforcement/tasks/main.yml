@@ -1,0 +1,35 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+  when: distro == "cdh"
+
+- include_vars: group_vars/hortonworks
+  when: distro == "hdp"
+
+- name: Download pip...
+  get_url: url=https://bootstrap.pypa.io/get-pip.py dest=/root/
+
+- name: Install pip...
+  command: "python /root/get-pip.py"
+  become: yes
+
+- name: Install httplib2
+  pip: name=httplib2 state=present
+
+- name: Starting Policy Enforcement For Simple Cluster...
+  include: plugin_enf.yml
+  when: '{{ is_kerberos|lower }} == false'
+
+- name: Starting Policy Enforcement For Kerberized Cluster...
+  include: plugin_enf_krb.yml
+  when: '{{ is_kerberos|lower }} == true'

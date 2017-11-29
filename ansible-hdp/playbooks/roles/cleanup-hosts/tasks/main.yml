@@ -1,0 +1,79 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+  when: distro == "cdh"
+
+- include_vars: group_vars/hortonworks
+  when: distro == "hdp"
+
+- name: Check if ambari-server service exists
+  stat: path=/etc/init.d/ambari-server
+  register: amb_server_service
+
+- name: Stop ambari-server
+  service: name=ambari-server state=stopped
+  when: amb_server_service.stat.exists
+
+- name: Check if ambari-agent service exists
+  stat: path=/etc/init.d/ambari-agent
+  register: amb_agent_service
+
+- name: Stop ambari-agent
+  service: name=ambari-agent state=stopped
+  when: amb_agent_service.stat.exists
+
+- name: Remove ambari-server/ambari-agent packages
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: removed
+  with_items:
+    - ambari-server
+    - ambari-agent
+  when: ansible_os_family == "RedHat"
+
+- name: Remove ambari-server/ambari-agent packages
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: removed
+  with_items:
+    - ambari-server
+    - ambari-agent
+  when: ansible_os_family == "Debian"
+
+- name: Clean artifact path
+  file:
+    state: absent
+    path: "{{ item }}/"
+  with_items:
+    - /var/lib/ambari-server
+    - /var/run/ambari-server
+    - /usr/lib/ambari-server
+    - /etc/ambari-server
+    - /var/log/ambari-server
+    - /usr/lib/python2.6/site-packages/ambari*
+    - /var/lib/ambari-agent
+    - /var/run/ambari-agent
+    - /usr/lib/ambari-agent
+    - /etc/ambari-agent
+    - /var/log/ambari-agent
+    - /etc/yum.repos.d/ambari.repo
+
+- name: Remove ambari.repo and hdp.repo
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - /etc/yum.repos.d/ambari.repo
+    - /etc/yum.repos.d/HDP.repo

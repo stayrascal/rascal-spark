@@ -1,0 +1,91 @@
+---
+- name: Creating User={{ user_has_permission }}
+  user: name={{ user_has_permission }} password={{ password1 }}
+
+- name: Creating user={{user_doesnot_have_permission}}
+  user: name={{user_doesnot_have_permission}} password={{password2}}
+
+- name: HDFS Plugin Enforcement For True-Negative Case
+  command: "hdfs dfs -mkdir {{create_hdfs_dir}}"
+  become_user: " {{user_doesnot_have_permission}} "
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: HDFS Plugin Enforcement For True-Positive Case
+  command: "hdfs dfs -mkdir {{create_hdfs_dir}}"
+  become_user: " {{user_has_permission}} "
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: creating table schema file "{{hbase_schema_file}}"
+  file: path={{ hbase_schema_file }} state=touch mode=777 owner={{ user_has_permission }}
+
+- copy: content="{{hbase_table_query}}" dest="{{hbase_schema_file}}"
+
+- name: HBASE Plugin Enforcement For True-Negative Case
+  command: "hbase shell {{hbase_schema_file}}"
+  become_user: "{{ user_doesnot_have_permission }}"
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: HBASE Plugin Enforcement For True-Positive Case
+  command: "hbase shell {{ hbase_schema_file }}"
+  become_user: "{{ user_has_permission }}"
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: HIVE Plugin Enforcement For True-Negative Case
+  shell: '/usr/bin/beeline -u "jdbc:hive2://{{hive_server_host}}:10000" -n {{user_doesnot_have_permission}} -p {{password2}} -d org.apache.hive.jdbc.HiveDriver -e " {{hive_create_table_query}} "'
+  ignore_errors: True
+
+- name: HIVE Plugin Enforcement For True-Positive Case
+  shell: '/usr/bin/beeline -u "jdbc:hive2://{{hive_server_host}}:10000" -n {{user_has_permission}} -p {{password1}} -d org.apache.hive.jdbc.HiveDriver -e " {{hive_create_table_query}} "'
+  ignore_errors: True
+
+- name: Downloading Hadoop Mapreduce Jar File
+  get_url:
+    url: "{{ hadoop_mapreduce_jar_url }}"
+    dest: "{{ hadoop_mapreduce_jar_path}}"
+    mode: 0777
+  ignore_errors: True
+
+- name: YARN Plugin Enforcement for True-Negative Case
+  shell: yarn jar "{{ hadoop_mapreduce_jar_path }}" pi -Dmapred.job.queue.name={{ yarn_queue }} 10 100000 & sleep 10; exit;
+  become_user: "{{ user_doesnot_have_permission }}"
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: YARN Plugin Enforcement for True-Positive Case
+  shell: yarn jar "{{ hadoop_mapreduce_jar_path }}" pi -Dmapred.job.queue.name={{ yarn_queue }} 10 100000 & sleep 10; exit;
+  become_user: "{{ user_has_permission }}"
+  become: yes
+  become_method: su
+  ignore_errors: True
+
+- name: KNOX Plugin Enforcement for True-Positive Case
+#  command: "curl -iku admin:admin-password -X GET  'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'"
+  uri:
+    url: 'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'
+    method: GET
+    user: admin
+    password: admin-password
+    status_code: 403,200
+    force_basic_auth: yes
+    validate_certs: no
+  ignore_errors: True
+
+- name: KNOX Plugin Enforcement for True-Negative Case
+  uri:
+    url: 'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'
+    method: GET
+    user: sam
+    password: sam-password
+    status_code: 403,200
+    force_basic_auth: yes
+    validate_certs: no
+  ignore_errors: True

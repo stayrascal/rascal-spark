@@ -1,0 +1,174 @@
+---
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: HDFS Plugin Enforcement For True-Negative Case
+  command: "hdfs dfs -mkdir {{create_hdfs_dir}}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: HDFS Plugin Enforcement For True-Positive Case
+  command: "hdfs dfs -mkdir {{create_hdfs_dir}}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: creating table schema file "{{hbase_schema_file}}"
+  file: path={{hbase_schema_file}} state=touch mode=777
+
+- copy: content="{{hbase_table_query}}" dest="{{hbase_schema_file}}"
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: HBASE Plugin Enforcement For True-Negative Case
+  command: "hbase shell {{hbase_schema_file}}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: HBASE Plugin Enforcement For True-Positive Case hbase shell {{hbase_schema_file}}
+  command: "hbase shell {{hbase_schema_file}}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: HIVE Plugin Enforcement For True-Negative Case
+  shell: 'beeline -u "{{ hive_server_host }}" -e "{{ hive_create_table_query }}"'
+  ignore_errors: True
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: HIVE Plugin Enforcement For True-Positive Case
+  shell: 'beeline -u "{{ hive_server_host }}" -e "{{ hive_create_table_query }}"'
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Downloading Hadoop Mapreduce Jar File
+  get_url:
+    url: "{{ hadoop_mapreduce_jar_url }}"
+    dest: "{{ hadoop_mapreduce_jar_path}}"
+    mode: 0777
+  ignore_errors: True
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: YARN Plugin Enforcement for True-Negative Case
+  shell: yarn jar "{{ hadoop_mapreduce_jar_path }}" pi -Dmapred.job.queue.name={{ yarn_queue }} 10 100000 & sleep 10; exit;
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: YARN Plugin Enforcement for True-Positive Case
+  shell: yarn jar "{{ hadoop_mapreduce_jar_path }}" pi -Dmapred.job.queue.name={{ yarn_queue }} 10 100000 & sleep 10; exit;
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: KNOX Plugin Enforcement for True-Positive Case
+#  command: "curl -iku admin:admin-password -X GET  'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'"
+  uri:
+    url: 'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'
+    method: GET
+    user: admin
+    password: admin-password
+    status_code: 200,403
+    force_basic_auth: yes
+    validate_certs: no
+  ignore_errors: True
+
+- name: KNOX Plugin Enforcement for True-Negative Case
+  uri:
+    url: 'https://{{ knox_server_host }}:8443/gateway/default/webhdfs/v1?op=LISTSTATUS'
+    method: GET
+    user: sam
+    password: sam-password
+    status_code: 403,200
+    force_basic_auth: yes
+    validate_certs: no
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: STORM Plugin Enforcement for True-Negative Case
+  shell: storm -c java.security.auth.login.config=/etc/storm/conf/client_jaas.conf jar /usr/hdp/current/storm-client/contrib/storm-starter/storm-starter-topologies-*.jar storm.starter.StatefulTopology "{{ storm_topology_name }}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: STORM Plugin Enforcement for True-Positive Case
+  shell: storm -c java.security.auth.login.config=/etc/storm/conf/client_jaas.conf jar /usr/hdp/current/storm-client/contrib/storm-starter/storm-starter-topologies-*.jar storm.starter.StatefulTopology "{{ storm_topology_name }}"
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_doesnot_have_permission}}
+  shell: echo "{{password2}}" | kinit {{user_doesnot_have_permission}}
+  ignore_errors: True
+
+- name: Creating Topic in KAFKA
+  shell: '/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper `hostname -f`:2181 --replication-factor 1 --partitions 1 --topic "{{ kafka_topic_name }}"'
+  ignore_errors: True
+
+- name: KAFKA Plugin Enforcement for True-Negative Case
+  shell: 'echo "HP.20" | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list `hostname -f`:6667 --topic "{{ kafka_topic_name }}" --security-protocol PLAINTEXTSASL & sleep 8; exit;'
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy
+
+- name: Kinit with {{user_has_permission}}
+  shell: echo "{{password1}}" | kinit {{user_has_permission}}
+  ignore_errors: True
+
+- name: KAFKA Plugin Enforcement for True-Positive Case
+  shell: 'echo "HP.20" | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list `hostname -f`:6667 --topic "{{ kafka_topic_name }}" --security-protocol PLAINTEXTSASL & sleep 8; exit;'
+  ignore_errors: True
+
+- name: Kdestroy...
+  shell: kdestroy

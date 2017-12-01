@@ -76,4 +76,4 @@
     path: "{{ item }}"
   with_items:
     - /etc/yum.repos.d/ambari.repo
-    - /etc/yum.repos.d/HDP.repo
+    - /etc/yum.repos.d/HDP.repo ThoughtWorks

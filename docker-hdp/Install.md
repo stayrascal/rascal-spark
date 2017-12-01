@@ -4,6 +4,13 @@
 - ambari-server upgrade
 
 
+# Cluster Id is incompatible error reported when starting datanode service
+- delete the ${dfs.datanode.data.dir}/current directory and restart
+- https://discuss.pivotal.io/hc/en-us/articles/201719077-Cluster-Id-is-incompatible-error-reported-when-starting-datanode-service
+
+# Faclon Web UI failing with HTTP 503 service unavailable
+- https://community.hortonworks.com/questions/77600/faclon-web-ui-failing-with-http-503-service-unavai.html
+
 node1:
 Atlas Metadata Client
 Atlas Metadata Server

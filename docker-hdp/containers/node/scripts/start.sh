@@ -6,3 +6,5 @@ while true; do
   sleep 3
   tail -f /var/log/ambari-agent/ambari-agent.log
 done
+
+/usr/sbin/init

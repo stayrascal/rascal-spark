@@ -30,3 +30,10 @@
 ## Transform Data
 - Execute PIG script
     
+    
+    
+35.167.131.158 ip-10-0-0-170.us-west-2.compute.internal
+35.160.83.16 ip-10-0-0-108.us-west-2.compute.internal
+52.24.94.221 ip-10-0-0-220.us-west-2.compute.internal
+52.27.152.12 ip-10-0-0-252.us-west-2.compute.internal
+34.223.232.188 ip-10-0-0-33.us-west-2.compute.internal

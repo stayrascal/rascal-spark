@@ -1,0 +1,20 @@
+{ "blueprint":"multi-container",
+"default_password" : "dev",
+"configurations" : [
+  {
+    "hive-site" : {
+      "properties" : {
+        "javax.jdo.option.ConnectionURL" : "jdbc:postgresql://postgres.dev"
+      }
+    }
+  }
+],
+"host_groups":[
+  { "name":"host_group_1",
+    "hosts":[ { "fqdn":"dn0.dev" } ]
+  },
+  { "name":"host_group_2",
+    "hosts":[ { "fqdn":"master0.dev" } ]
+  }
+]
+}

@@ -70,3 +70,11 @@
 - Export data: EXPORT TABLE tablename [PARTITION (part_column="value"[, ...])] TO 'export_target_path'
 - Import data: IMPORT IMPORT [[EXTERNAL] TABLE new_or_original_tablename [PARTITION (part_column="value"[, ...])]] FROM 'source_path' [LOCATION 'import_target_path']  
     
+35.167.131.158 ip-10-0-0-170.us-west-2.compute.internal
+35.160.83.16 ip-10-0-0-108.us-west-2.compute.internal
+52.24.94.221 ip-10-0-0-220.us-west-2.compute.internal
+52.27.152.12 ip-10-0-0-252.us-west-2.compute.internal
+34.223.232.188 ip-10-0-0-33.us-west-2.compute.internal
+
+
+https://docs.google.com/forms/d/e/1FAIpQLSf3-67pwgFnnyhqn1gHop7XTmFs8svuk_CtOa0bUomDexLOYg/viewform?usp=form_confirm

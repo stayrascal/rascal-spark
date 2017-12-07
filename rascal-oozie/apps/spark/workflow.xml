@@ -1,0 +1,36 @@
+<workflow-app name="[WF-DEF-NAME]" xmlns="uri:oozie:workflow:0.5">
+    ...
+    <action name="[NODE-NAME]">
+        <spark xmlns="uri:oozie:spark-action:0.1">
+            <job-tracker>[JOB-TRACKER]</job-tracker>
+            <name-node>[NAME-NODE]</name-node>
+            <prepare>
+                <delete path="[PATH]"/>
+                ...
+                <mkdir path="[PATH]"/>
+                ...
+            </prepare>
+            <job-xml>[SPARK SETTINGS FILE]</job-xml>
+            <configuration>
+                <property>
+                    <name>[PROPERTY-NAME]</name>
+                    <value>[PROPERTY-VALUE]</value>
+                </property>
+                ...
+            </configuration>
+            <master>[SPARK MASTER URL]</master>
+            <mode>[SPARK MODE]</mode>
+            <name>[SPARK JOB NAME]</name>
+            <class>[SPARK MAIN CLASS]</class>
+            <jar>[SPARK DEPENDENCIES JAR / PYTHON FILE]</jar>
+            <spark-opts>[SPARK-OPTIONS]</spark-opts>
+            <arg>[ARG-VALUE]</arg>
+            ...
+            <arg>[ARG-VALUE]</arg>
+            ...
+        </spark>
+        <ok to="[NODE-NAME]"/>
+        <error to="[NODE-NAME]"/>
+    </action>
+    ...
+</workflow-app>

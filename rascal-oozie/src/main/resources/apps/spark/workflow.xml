@@ -1,5 +1,4 @@
 <workflow-app name="[WF-DEF-NAME]" xmlns="uri:oozie:workflow:0.5">
-    ...
     <action name="[NODE-NAME]">
         <spark xmlns="uri:oozie:spark-action:0.1">
             <job-tracker>[JOB-TRACKER]</job-tracker>
@@ -33,4 +32,34 @@
         <error to="[NODE-NAME]"/>
     </action>
     ...
+</workflow-app>
+
+<workflow-app name="sample-wf" xmlns="uri:oozie:workflow:0.1">
+...
+<action name="myfirstsparkjob">
+    <spark xmlns="uri:oozie:spark-action:0.1">
+        <job-tracker>foo:8021</job-tracker>
+        <name-node>bar:8020</name-node>
+        <prepare>
+            <delete path="${jobOutput}"/>
+        </prepare>
+        <configuration>
+            <property>
+                <name>mapred.compress.map.output</name>
+                <value>true</value>
+            </property>
+        </configuration>
+        <master>local[*]</master>
+        <mode>client<mode>
+        <name>Spark Example</name>
+        <class>org.apache.spark.examples.mllib.JavaALS</class>
+        <jar>/lib/spark-examples_2.10-1.1.0.jar</jar>
+        <spark-opts>--executor-memory 20G --num-executors 50</spark-opts>
+        <arg>inputpath=hdfs://localhost/input/file.txt</arg>
+        <arg>value=2</arg>
+    </spark>
+    <ok to="myotherjob"/>
+    <error to="errorcleanup"/>
+</action>
+...
 </workflow-app>

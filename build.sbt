@@ -50,4 +50,6 @@ lazy val  `rascal-data-provider` = project in file("rascal-data-provider")
 
 lazy val `rascal-kafka` = project in file("rascal-kafka")
 
+lazy val `rascal-oozie` = project in file("rascal-oozie")
+
 libraryDependencies += "com.twitter" % "finagle-core_2.11" % "7.1.0"

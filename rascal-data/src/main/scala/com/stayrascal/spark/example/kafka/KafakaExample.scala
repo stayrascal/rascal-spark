@@ -4,7 +4,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 
 object KafakaExample {
-  var spark = SparkSession.builder()
+  /*var spark = SparkSession.builder()
     .appName("Kafka Example")
     .master("local[*]")
     .getOrCreate()
@@ -27,5 +27,5 @@ object KafakaExample {
     unifiedStream.repartition(sparkProcessingParallelism)
   }
 
-  val numInputMessage = spark.sparkContext.accumul (0L, "Kafka message consumer")
+  val numInputMessage = spark.sparkContext.accumul (0L, "Kafka message consumer")*/
 }

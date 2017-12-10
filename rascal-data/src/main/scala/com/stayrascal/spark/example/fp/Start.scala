@@ -1,6 +1,6 @@
-package com.stayrascal.spark.example.log
+package com.stayrascal.spark.example.fp
 
-object Test {
+object Start {
   def fib(n: Int): Int = {
 
     def go(n: Int): Int = {

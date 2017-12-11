@@ -26,6 +26,7 @@ object DataStructure {
       else go(n - 1)
     }
     go(n)*/
+
     if (n <= 0) l
     else l match {
       case Nil => Nil

@@ -1,4 +1,5 @@
 package com.stayrascal.spark.example.fp
+package error.handle
 
 import scala.{Option => _, Either => _}
 

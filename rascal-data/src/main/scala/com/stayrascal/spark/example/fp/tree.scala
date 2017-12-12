@@ -1,4 +1,5 @@
 package com.stayrascal.spark.example
+package tree
 
 sealed trait Tree[+A]
 

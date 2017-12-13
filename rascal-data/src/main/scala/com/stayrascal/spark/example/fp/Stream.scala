@@ -96,6 +96,18 @@ object Stream {
     }
   }
 
+  def unfoldViaFold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    f(z).fold(Empty[A])((p: (A, S)) => cons(p._1, unfoldViaFold(p._2)(f)))
+  }
+
+  def unfoldViaMap[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+    f(z).map((p : (A, S)) => cons(p._1, unfoldViaMap(p._2)(f))).getOrElse(Empty[A])
+  }
+
+  def fibsViaUnfold = {
+    unfold((0, 1)) {case (pre, cur) => Some((pre, (cur, pre + cur)))}
+  }
+
 
 
 }

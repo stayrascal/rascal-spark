@@ -37,6 +37,10 @@ object RNG {
     }
   }
 
+  def boolean(rng: RNG): (Boolean, RNG) =
+    rng.nextInt match { case (i,rng2) => (i%2==0,rng2) }
+
+
   type Rand[+A] = RNG => (A, RNG)
 
   val int: Rand[Int] = _.nextInt

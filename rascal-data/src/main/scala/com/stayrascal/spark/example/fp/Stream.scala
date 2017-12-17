@@ -1,5 +1,4 @@
 package com.stayrascal.spark.example.fp
-package stream
 
 sealed trait Stream[+A] {
   def toListRecursive: List[A] = this match {

@@ -102,3 +102,22 @@ case class Stub(chars: String) extends WC
 
 case class Part(lStub: String, words: Int, rStub: String) extends WC
 
+trait Foldable[F[_]] {
+  import monoid._
+  def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B = foldMap(as)(f.curried)(endoMonoid[B])(z)
+  def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = foldLeft(as)(z)(f)
+  def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B = foldLeft(as)(mb.zero)((b, a) => mb.op(f(a), b))
+  def concatenate[A](as: F[A])(m: Monoid[A]): A = foldLeft(as)(m.zero)(m.op)
+}
+
+case class FoldList[List] extends Foldable[List] {
+
+  override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B) = as match {
+    case h :: t =>
+  }
+
+  override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B) = ???
+
+  override def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]) = ???
+}
+

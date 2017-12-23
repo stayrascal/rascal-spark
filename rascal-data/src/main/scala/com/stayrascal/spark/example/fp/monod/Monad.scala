@@ -14,7 +14,7 @@ trait Functor[F[_]] {
 trait Monad[F[_]] extends Functor[F] {
   def unit[A](a: => A): F[A]
 
-  def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
+  def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = join(map(ma)(f))
 
   override def map[A, B](fa: F[A])(f: A => B): F[B] = flatMap(fa)(ma => unit(f(ma)))
 
@@ -34,7 +34,16 @@ trait Monad[F[_]] extends Functor[F] {
 
   def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
 
-  def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = ms.foldLeft(unit(List[A]()))((acc, a) => map2(f(a), acc)((b, l) => if (b) l else Nil)
+  def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = x => flatMap(f(a))(g)
+
+  def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = compose((_: Unit) => ma, f)(())
+
+  def join[A](mma: F[F[A]]): F[A] = flatMap(mma)(x => x)
+
+  def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] =
+    ms.foldRight(unit(List[A]()))((x, y) =>
+      compose(f, (b: Boolean) => if (b) map2(unit(x), y)(_ :: _) else y)(x))
+
 }
 
 object Monad {

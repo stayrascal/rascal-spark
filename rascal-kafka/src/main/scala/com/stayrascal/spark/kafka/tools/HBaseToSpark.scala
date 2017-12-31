@@ -1,9 +1,9 @@
 package com.stayrascal.spark.kafka.tools
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.client.{ConnectionFactory, Get, Put, Table}
+import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
-import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
+import org.apache.hadoop.hbase.{HBaseConfiguration, HColumnDescriptor, HTableDescriptor, TableName}
 
 import scala.collection.mutable
 
@@ -23,6 +23,14 @@ object HBaseToSpark {
     conf.addResource(getClass.getClassLoader.getResourceAsStream("hbase-site.xml"))
 
     val connection = ConnectionFactory.createConnection(conf)
+
+    def createTable(conf: Configuration) = {
+      val admin = connection.getAdmin()
+      val tableDescriptor = new HTableDescriptor(TableName.valueOf("emp"))
+      tableDescriptor.addFamily(new HColumnDescriptor("personal"))
+      tableDescriptor.addFamily(new HColumnDescriptor("professional"))
+      admin.createTable(tableDescriptor)
+    }
 
     def getTable(tableName: String): Table = {
       val tal = connection.getTable(TableName.valueOf(tableName))
